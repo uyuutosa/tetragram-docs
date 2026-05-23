@@ -39,12 +39,26 @@ export async function runAdd(opts: ParsedArgs): Promise<void> {
   }
 
   const templateDocs = join(await resolveTemplateDir(), "docs");
-  const src = join(templateDocs, section);
-  const dest = join(targetDocs, section);
-
-  if (!existsSync(src)) {
-    throw new Error(`Section "${section}" missing from template`);
+  // Section lookup candidates: layer-prefixed (post-ADR-0010) first, fall
+  // back to flat path. Mirrors init.ts logic — see that file's section
+  // loop for the same rationale.
+  const candidates = [join("01-artefacts", section), section];
+  let src = "";
+  let rel = "";
+  for (const c of candidates) {
+    if (existsSync(join(templateDocs, c))) {
+      src = join(templateDocs, c);
+      rel = c;
+      break;
+    }
   }
+  if (!src) {
+    throw new Error(
+      `Section "${section}" missing from template ` +
+        `(tried 01-artefacts/${section} and ${section})`,
+    );
+  }
+  const dest = join(targetDocs, rel);
 
   const log = (msg: string) => process.stdout.write(`${msg}\n`);
   log(`pentaglyph add ${section}`);
