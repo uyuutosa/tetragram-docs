@@ -204,6 +204,33 @@ cp -r pentaglyph-docs/template/.claude ./my-project/.claude
 
 ---
 
+## Recommended companion marketplaces
+
+pentaglyph itself is a **bind-only** kit — it lists the five external standards (arc42, C4, MADR, Diátaxis, TiSDD) and binds them to a concrete file layout, but it deliberately does **not** ship vendor integrations, content generators, or infrastructure automation ([ADR-0002 `bind-canons-only`](./template/docs/01-artefacts/arc42/09-decisions/0002-bind-canons-only-no-self-authored-standards.md)). Those concerns live in **separate companion marketplaces** that adopters can install selectively via Claude Code's plugin system.
+
+The reference companion is [**`claude-code-marketplaces`**](https://github.com/uyuutosa/claude-code-marketplaces) — a monorepo of themed marketplaces, each independently installable via `claude marketplace add <path>`:
+
+| Marketplace | Status | Plugins | Theme |
+|---|---|---|---|
+| [**`ops`**](https://github.com/uyuutosa/claude-code-marketplaces/tree/main/marketplaces/ops) | 🟢 v1.0 | `cmd`, `ado-base`, `ado-flow`, `ado-scrum`, `ado-meta` | Vendor integrations — generic Bash dispatcher + Azure DevOps (split into baseline / flow / scrum / meta plugins) |
+| [**`doc`**](https://github.com/uyuutosa/claude-code-marketplaces/tree/main/marketplaces/doc) | 🟢 v1.0 | `doc-base` | Documentation workflow — `/doc-sync`, `/doc-writer`, `/postmortem`, `/handoff`, `/impl-plan` (no ADO dependency) |
+| [**`content`**](https://github.com/uyuutosa/claude-code-marketplaces/tree/main/marketplaces/content) | 🟢 v1.0 | `pdf`, `pptx`, `pptx-roundtrip`, `image` | Content generation — pandoc/lualatex PDF, python-pptx slide assembly, Azure OpenAI + Google Gemini (paperbanana) image generation |
+| [**`devops`**](https://github.com/uyuutosa/claude-code-marketplaces/tree/main/marketplaces/devops) | 🟢 v1.0 | `azure-vm`, `azure-deploy`, `azure-seed`, `azure-inventory` | Azure infrastructure ops — VM lifecycle, app deployment, seed data sync, env / cost inventory (Azure-only; AWS / GCP variants out of scope) |
+| `quality` | 🟡 planned | TBD | Code quality / test (test coverage matrix, lint baseline, security audit) |
+
+Each marketplace decouples a concrete vendor / generator / infrastructure binding from pentaglyph's standards layer, so:
+
+- Adopters using **Azure DevOps** install `ops` for ADO Boards / Sprint / PR / Pipeline workflows.
+- Adopters using **other ticket systems** (Jira / Linear / GitHub Issues / Shortcut) build equivalent companion marketplaces — there is room in the ecosystem for `jira-ops`, `linear-ops`, etc., and PRs to this README to add them are welcome.
+- Adopters needing **content generation** (slide decks, PDFs, paper-quality figures) install `content` independently of any vendor binding.
+- Adopters running on **Azure infrastructure** install `devops` for VM / deployment / Key Vault sync. AWS- and GCP-equivalent marketplaces would live as separate themed repos (`aws-devops`, `gcp-devops`) following the same pattern.
+
+The split between pentaglyph (standards) and companion marketplaces (vendor / content / devops bindings) is **intentional**: it preserves pentaglyph as a `bind-only` kit while letting downstream consumers compose only the integrations they actually need.
+
+> The `claude-code-marketplaces` repo is one possible companion. Community-maintained equivalents for different ticket systems / cloud providers / content stacks are encouraged.
+
+---
+
 ## Why "pentaglyph"?
 
 The five standards in this kit each answer a different question:
